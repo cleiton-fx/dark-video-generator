@@ -10,7 +10,7 @@
             --bg-body: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
             --text-main: #e0e0e0;
             --text-muted: #888;
-            --bg-card: rgba(255, 255, 255, 0.05);
+            --bg-card: rgba(255, 255, 255, 0.03);
             --bg-input: rgba(0, 0, 0, 0.4);
             --border-color: rgba(255, 255, 255, 0.1);
             
@@ -61,6 +61,15 @@
             padding: 20px;
             transition: background 0.5s ease, color 0.5s ease;
         }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none; /* Oculto até login */
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- TELA DE LOGIN --- */
         #loginScreen {
@@ -142,16 +151,6 @@
 
         input:checked + .slider { background-color: var(--primary-text); }
         input:checked + .slider:before { transform: translateX(26px); }
-
-        /* --- CONTEÚDO PRINCIPAL --- */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: none; /* Oculto até login */
-            animation: fadeIn 0.8s ease;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Sistema de Abas */
         .tabs-nav {
@@ -454,18 +453,18 @@
 
         .success-message { background: #4caf50; color: white; padding: 15px 25px; border-radius: 8px; position: fixed; bottom: 20px; right: 20px; display: none; z-index: 1000; }
         
+        /* Notificação de Sync */
+        .sync-badge { font-size: 0.6em; background: var(--primary-text); color: white; padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 5px; }
+        
         .error-message {
-            background: rgba(244, 67, 54, 0.15);
+            background: rgba(244, 67, 54, 0.2);
             color: #f44336;
             padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border: 1px solid rgba(244, 67, 54, 0.3);
+            border-radius: 5px;
+            margin-top: 10px;
             display: none;
-            font-size: 0.9em;
+            border: 1px solid #f44336;
         }
-        .error-message a { color: #f44336; font-weight: bold; }
-        .sync-badge { font-size: 0.6em; background: var(--primary-text); color: white; padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -513,8 +512,8 @@
                     <input type="password" id="apiKey" placeholder="Cole sua chave API do Google Gemini aqui...">
                     <button onclick="saveApiKey()" style="width: auto; margin-top: 0;">💾 Salvar</button>
                 </div>
-                <div class="api-help">
-                    📌 Pegue sua chave gratuita em: <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
+                <div class="api-help" style="margin-top:10px; font-size:0.9em; color:var(--text-muted);">
+                    📌 Pegue sua chave gratuita em: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--primary-text); text-decoration:none;">Google AI Studio</a>
                 </div>
             </div>
 
@@ -524,78 +523,49 @@
                 
                 <div class="controls">
                     <div class="control-group">
-                        <div class="control-label">Modo de Cálculo</div>
+                        <div class="control-label">Modo</div>
                         <select id="modeSelect" onchange="toggleMode()">
-                            <option value="auto">Automático (baseado na duração)</option>
-                            <option value="manual">Manual (você escolhe)</option>
+                            <option value="auto">Automático</option>
+                            <option value="manual">Manual</option>
                         </select>
                     </div>
-
                     <div class="control-group">
-                        <div class="control-label">⏱️ Duração Total (minutos)</div>
-                        <input type="number" id="totalMinutes" value="0" min="0" placeholder="Ex: 15 (opcional)">
+                        <div class="control-label">⏱️ Duração Vídeo (min)</div>
+                        <input type="number" id="totalMinutes" value="0" min="0">
                     </div>
-
                     <div class="control-group">
-                        <div class="control-label">⏲️ Duração por Cena (segundos)</div>
+                        <div class="control-label">⏲️ Segundos p/ Cena</div>
                         <input type="number" id="sceneDuration" value="30" min="10">
                     </div>
-
                     <div class="control-group" id="manualCount" style="display:none;">
-                        <div class="control-label">Número de Prompts</div>
-                        <input type="number" id="promptCount" value="30" min="5">
+                        <div class="control-label">Qtd Prompts</div>
+                        <input type="number" id="promptCount" value="30">
                     </div>
                 </div>
 
                 <div class="stats">
-                    <div class="stat-box">
-                        <div class="stat-label">Palavras</div>
-                        <div class="stat-value" id="wordCount">0</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Duração Estimada</div>
-                        <div class="stat-value" id="duration">0:00</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Cenas Sugeridas</div>
-                        <div class="stat-value" id="suggestedScenes">0</div>
-                    </div>
+                    <div class="stat-box"><div class="stat-label">Palavras</div><div class="stat-value" id="wordCount">0</div></div>
+                    <div class="stat-box"><div class="stat-label">Duração</div><div class="stat-value" id="duration">0:00</div></div>
+                    <div class="stat-box"><div class="stat-label">Cenas</div><div class="stat-value" id="suggestedScenes">0</div></div>
                 </div>
 
-                <button id="generateBtn" onclick="generatePrompts()">🚀 Gerar Prompts</button>
+                <button id="generateBtn" onclick="generatePrompts()">🚀 Gerar Prompts Cinematográficos</button>
                 <div class="error-message" id="errorMsg"></div>
             </div>
 
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>Processando seu roteiro com IA Gemini...<br>Gerando prompts cinematográficos...</p>
-            </div>
+            <div class="loading" id="loading"><div class="spinner"></div><p>Gerando prompts com IA...</p></div>
 
             <div class="results" id="results">
-                <div style="background: rgba(76, 175, 80, 0.1); padding: 20px; border-radius: 10px; border: 2px solid #4caf50; margin-bottom: 20px;">
-                    <h3 style="color: #4caf50; margin: 0 0 10px 0; font-size: 1.2em;">✅ PARA WHISK (Use este!)</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 15px;">Formato limpo: apenas "01: prompt" sem cabeçalhos</p>
-                    <button class="copy-all-btn" onclick="copyForWhisk()" style="margin: 0;">🤖 Copiar para Whisk</button>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="copy-all-btn" onclick="copyForWhisk()">🤖 Copiar p/ Whisk</button>
+                    <button class="copy-all-btn" style="background: var(--primary-gradient);" onclick="copyAllFormatted()">📋 Backup Completo</button>
                 </div>
                 
-                <div style="background: var(--bg-card); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-                    <h3 style="color: var(--text-muted); margin: 0 0 10px 0; font-size: 1.1em;">📋 Backup Completo (opcional)</h3>
-                    <button class="copy-all-btn" onclick="copyAllPrompts()" style="background: var(--primary-gradient); margin: 0;">📋 Copiar Tudo Formatado</button>
-                </div>
-                
-                <h2 class="section-title" id="scenesTitle">🎞️ Cenas do Vídeo</h2>
-                <div id="scenesContainer"></div>
+                <div id="scenesContainer" style="margin-top:20px;"></div>
 
-                <div class="thumbnail-section">
-                    <h2 class="thumbnail-title">🖼️ Master Thumbnail (Alta CTR)</h2>
-                    <div class="concept" id="thumbnailConcept"></div>
-                    <div class="prompt-card">
-                        <div class="prompt-header">
-                            <span class="prompt-number">THUMBNAIL</span>
-                            <button class="copy-btn" onclick="copyPrompt('thumbnail')">📋 Copiar</button>
-                        </div>
-                        <div class="prompt-text" id="thumbnailPrompt"></div>
-                    </div>
+                <div class="thumbnail-section" id="thumbnailArea" style="display:none;">
+                    <h3 style="color:var(--primary-text); margin-bottom:10px;">🖼️ Master Thumbnail</h3>
+                    <div id="thumbContent" class="prompt-card"></div>
                 </div>
             </div>
         </div>
@@ -635,7 +605,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="success-message" id="successMsg">✅ Copiado com sucesso!</div>
@@ -807,8 +776,8 @@ FORMATO DE RESPOSTA (JSON PURO OBRIGATÓRIO):
 }
 ROTEIRO: ${roteiro}`;
 
-                // ATUALIZADO PARA MODELO ESTÁVEL 1.5 FLASH
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                // ATUALIZADO PARA MODELO ESTÁVEL 1.5 FLASH-001 (Resolve o erro "not found")
+                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -832,9 +801,8 @@ ROTEIRO: ${roteiro}`;
 
             } catch (e) {
                 console.error(e);
-                // TRATAMENTO DE ERRO ESPECÍFICO PARA API DESATIVADA
                 if(e.message.includes('API has not been used') || e.message.includes('disabled')) {
-                    showErrorHtml(`⚠️ A API não está ativada na sua chave.<br><a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:white;text-decoration:underline;">Clique aqui para gerar uma chave válida no Google AI Studio</a> (é grátis e já vem ativada).`);
+                    showErrorHtml(`⚠️ API não ativada.<br><a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#f44336;text-decoration:underline;">Gere uma chave válida aqui</a>`);
                 } else {
                     showError('❌ Erro: ' + e.message);
                 }
@@ -847,7 +815,6 @@ ROTEIRO: ${roteiro}`;
         function displayResults(data, num) {
             const container = document.getElementById('scenesContainer');
             container.innerHTML = '';
-            document.getElementById('scenesTitle').textContent = `🎞️ Cenas (${num} Prompts)`;
             
             data.scenes.forEach(scene => {
                 container.innerHTML += `
@@ -860,8 +827,13 @@ ROTEIRO: ${roteiro}`;
                     </div>`;
             });
             
-            document.getElementById('thumbnailConcept').textContent = data.thumbnail.concept;
-            document.getElementById('thumbnailPrompt').textContent = data.thumbnail.prompt;
+            document.getElementById('thumbnailArea').style.display = 'block';
+            document.getElementById('thumbContent').innerHTML = `
+                <div style="font-style:italic; color:var(--text-muted); margin-bottom:10px;">${data.thumbnail.concept}</div>
+                <div style="color:var(--text-main);">${data.thumbnail.prompt}</div>
+                <button class="copy-btn" onclick="copyPrompt('thumbnail')" style="margin-top:10px;">📋 Copiar</button>
+            `;
+
             document.getElementById('results').style.display = 'block';
             document.getElementById('results').scrollIntoView({behavior: 'smooth'});
         }
